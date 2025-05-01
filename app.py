@@ -23,13 +23,12 @@ def do_min_rec():
 
 def do_max_rec():
     print("Recording maximum focus.")
-    record(20, 'max_bandpowers.csv')
+    record(60 * 5, 'max_bandpowers.csv')
     return "You clicked the second button."
 
 def spiderman_go():
     print("Running spiderman detection.")
     record_live()
-    
 
 def record_live():
     # Search for active LSL streams
@@ -80,7 +79,13 @@ def record_live():
         band_powers = compute_band_powers(data_epoch, fs)
         delta, theta, alpha, beta = band_powers
         
-        if beta > 0.5:
+        max_bands = pd.read_csv('max_bandspowers.csv')
+        min_bands = pd.read_csv('min_bandpowers.csv')
+        
+        print(max_bands['beta'].quantile(0.75))
+        print(min_bands['beta'].mean())
+        
+        if beta > max_bands['beta'].quantile(0.75):
             print('wow focus')
         else:
             print('no focus') 
