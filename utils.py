@@ -11,7 +11,7 @@ Muse LSL Tools adapted from https://github.com/alexandrebarachant/muse-lsl/blob/
 
 from matplotlib.colors import LinearSegmentedColormap
 import numpy as np
-import openai
+
 from scipy.signal import butter, lfilter, lfilter_zi
 
 
