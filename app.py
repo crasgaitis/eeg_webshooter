@@ -10,6 +10,10 @@ from pylsl import StreamInlet, resolve_byprop
 
 app = Flask(__name__)
 
+start_time = None      # for continuous timing
+total_focus_time = 0   # for cumulative timing
+last_time = time.time()
+
 BUFFER_LENGTH = 5
 EPOCH_LENGTH = 1
 OVERLAP_LENGTH = 0
@@ -29,7 +33,121 @@ def do_max_rec():
 def spiderman_go():
     print("Running spiderman detection.")
     record_live()
+    
+def compute_focus_score(rule_matrix):
+    """
+    Compute a normalized weighted focus score between 0 and 1 based on multiple variables.
 
+    Each variable is defined by a 4-element list:
+        [value, lower_bound, upper_bound, weight]
+
+    - If upper_bound > lower_bound:
+        The score increases as the value moves from lower_bound to upper_bound.
+    - If upper_bound < lower_bound:
+        The score increases as the value moves from upper_bound to lower_bound.
+    - If upper_bound == lower_bound:
+        The score is 1.0 if value == bound, otherwise 0.0.
+
+    The final score is the weighted sum of the individual normalized scores.
+    All weights are assumed to sum to 1.0 (but this is not enforced).
+
+    Parameters:
+        rule_3d (list of list): A list of [value, lower_bound, upper_bound, weight].
+
+    Returns:
+        float: A single focus score between 0 and 1.
+    """
+    total = 0
+    for var, low, high, weight in rule_matrix:
+        if high != low:
+            if high > low:
+                score = (var - low) / (high - low)
+            else:
+                score = (low - var) / (low - high)
+            score = max(0, min(1, score))  # clamp between 0 and 1
+        else:
+            score = 1.0 if var == low else 0.0
+
+        total += score * weight
+        print(total)
+        
+    return total
+
+def check_focus_continuous(rule_matrix, continuous, time_data):
+    """
+    Compute a blended focus score based on rule-based heuristics and focus time.
+    
+    Parameters:
+        rule_matrix (list of list): A list of [value, lower_bound, upper_bound, weight].
+        continuous (bool): If True, require uninterrupted focus; else accumulate over time.
+        time_data (list): [time_min, time_max, time_weight]
+            - time_min: score is 0 at or below this time
+            - time_max: score is 1 at or above this time
+            - time_weight: how much the time contributes to the final score (0 to 1)
+
+    Returns:
+        float: Final focus score between 0 and 1.
+    """
+    global focus_start_time, focus_total_time, last_check_time
+
+    curr_time = time.time()
+    delta_time = curr_time - last_check_time
+    last_check_time = curr_time
+
+    time_min, time_max, time_weight = time_data
+    rule_weight = 1.0 - time_weight
+
+    rule_score = compute_focus_score(rule_matrix)
+
+    if rule_score >= 1.0:
+        if continuous:
+            if focus_start_time is None:
+                focus_start_time = curr_time
+            time_focused = curr_time - focus_start_time
+        else:
+            focus_total_time += delta_time
+            time_focused = focus_total_time
+    else:
+        if continuous:
+            focus_start_time = None
+        time_focused = 0
+
+    if time_max != time_min:
+        time_score = (time_focused - time_min) / (time_max - time_min)
+        time_score = max(0.0, min(1.0, time_score))
+    else:
+        time_score = 1.0 if time_focused >= time_min else 0.0
+
+    total = rule_weight * rule_score + time_weight * time_score
+    print(total)
+    return total
+    
+def check_focus_discrete(focus_rule):
+    global start_time, total_focus_time, last_time
+    
+    condition, continuous, time_min = focus_rule
+    curr_time = time.time()
+    delta_time = curr_time - last_time
+    last_time = curr_time
+
+    if condition:
+        print('wow focus')
+        if continuous:
+            if start_time is None:
+                start_time = curr_time
+            time_focus = curr_time - start_time
+        else:
+            total_focus_time += delta_time
+            time_focus = total_focus_time
+    else:
+        print('no focus')
+        if continuous:
+            start_time = None
+        time_focus = 0
+
+    if time_focus >= time_min:
+        print(f'wowowo {time_focus}')
+        
 def record_live():
     # Search for active LSL streams
     print('Looking for an EEG stream...')
@@ -79,17 +197,14 @@ def record_live():
         band_powers = compute_band_powers(data_epoch, fs)
         delta, theta, alpha, beta = band_powers
         
-        max_bands = pd.read_csv('max_bandspowers.csv')
+        max_bands = pd.read_csv('iq_max_bandpowers.csv')
         min_bands = pd.read_csv('min_bandpowers.csv')
         
-        print(max_bands['beta'].quantile(0.75))
-        print(min_bands['beta'].mean())
+        condition = beta > max_bands['beta'].quantile(0.75)
         
-        if beta > max_bands['beta'].quantile(0.75):
-            print('wow focus')
-        else:
-            print('no focus') 
-
+        # check_focus((condition, True, 5))  # for continuous
+        check_focus_discrete((condition, False, 5))  # for cumulative
+            
 def record(duration_seconds=10, output_file='eeg_bandpowers.csv'):
     # Search for active LSL streams
     print('Looking for an EEG stream...')
