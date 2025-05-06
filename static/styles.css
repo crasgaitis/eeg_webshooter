@@ -1,0 +1,80 @@
+*{
+    color: white
+}
+
+body{
+    background-color: rgb(43, 46, 53);
+    overflow: hidden
+}
+
+canvas {
+    display: block;
+  }
+
+h1 {
+    font-family: "Snowburst One", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 50px;
+    margin-top: 50px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    font-weight: bold
+  }
+
+h2 {
+    font-family: "Snowburst One", system-ui;
+    font-style: italic;
+    font-weight: normal;
+    padding: 0; margin-top: 0
+}
+
+footer{
+    font-family: "Snowburst One", system-ui;
+    text-align: center;
+    opacity: 0.8
+}
+
+.container{
+    text-align: center;
+    padding: 40px
+}
+
+#logo {
+    width: 200px;
+    padding: 0;
+    margin: 0 auto;
+    animation: bounce 2s infinite ease-in-out;
+    filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(-10px);
+    }
+    50% {
+        transform: translateY(40px);
+    }
+}
+
+button{
+    background-color: rgb(87, 42, 42);
+    color: white;
+    border-radius: 30px;
+    padding: 10px
+}
+
+button:hover{
+    background-color: rgb(168, 73, 73);
+}
+
+#webCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1; /* Ensures it stays behind all content */
+    pointer-events: none; /* Allows clicks to go through */
+    background: black; /* Optional: makes the web stand out */
+}

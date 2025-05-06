@@ -18,19 +18,28 @@ BUFFER_LENGTH = 5
 EPOCH_LENGTH = 1
 OVERLAP_LENGTH = 0
 SHIFT_LENGTH = EPOCH_LENGTH - OVERLAP_LENGTH
-INDEX_CHANNEL = [0]
+INDEX_CHANNEL = [1]
 
 def do_min_rec():
+    """
+    Record a 20s interval of EEG data in a min_bandpowers.csv file.
+    """
     print("Recording minimum focus.")
     record(20, 'min_bandpowers.csv')
     return "You clicked the first button."
 
 def do_max_rec():
+    """
+    Record a 20s interval of EEG data in a max_bandpowers.csv file.
+    """
     print("Recording maximum focus.")
     record(60 * 5, 'max_bandpowers.csv')
     return "You clicked the second button."
 
 def spiderman_go():
+    """
+    Trigger live recordings with terminal printouts.
+    """
     print("Running spiderman detection.")
     record_live()
     

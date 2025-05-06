@@ -6,8 +6,13 @@
     <link rel="icon" href="{{ url_for('static', filename='synaptech_logo.png') }}">
 </head>
 <body>
+    <canvas id="webCanvas"></canvas>
     <div class = 'container'>
-        <h1>App</h1>
+        <br/>
+        <img id = "logo" src = "https://images-ext-1.discordapp.net/external/M5LIUBwqcr9wkSqkP3WSKcvNglZ2KhEndvoQK8JlNj0/https/www.pngarc.com/wp-content/uploads/2023/06/child-Spider-Man-chibi-background-png-image-1-min.png?format=webp&quality=lossless&width=1216&height=1286">
+
+        <h1>The Amazing Webshooter</h1>
+        <h2> "With great brainpower, comes great web-sponsibility." </h2>
 
         <form method="POST">
             <button type="submit" name="button1">Get min</button>
@@ -19,11 +24,112 @@
         <p>{{beta}}</p>
         <p>{{theta}}</p>
         <p>{{delta}}</p>
-
-    <footer>
-        <p>spiderman yay</p>
-    </footer>
     </div>
+    
+    <footer>
+        <p>Made with 🩵 by Catherine, Kush, Keishin, & Jenny </p>
+    </footer>
+
+
+    <script>
+        const canvas = document.getElementById("webCanvas");
+        const ctx = canvas.getContext("2d");
+    
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    
+        let mouse = { x: width / 2, y: height / 2 };
+        let points = [];
+    
+        class Splinter {
+          constructor(x, y, angle) {
+            this.x = x;
+            this.y = y;
+            this.vx = Math.cos(angle) * 2 + (Math.random() - 0.5);
+            this.vy = Math.sin(angle) * 2 + (Math.random() - 0.5);
+            this.life = 20;
+          }
+    
+          update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.life--;
+          }
+    
+          draw(ctx) {
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x - this.vx * 2, this.y - this.vy * 2);
+            ctx.strokeStyle = `rgba(240,255,253,${this.life / 20})`;
+            ctx.stroke();
+          }
+    
+          isDead() {
+            return this.life <= 0;
+          }
+        }
+    
+        let splinters = [];
+    
+        window.addEventListener("mousemove", (e) => {
+          mouse.x = e.clientX;
+          mouse.y = e.clientY;
+          points.push({ x: mouse.x, y: mouse.y, alpha: 1.0 });
+    
+          if (Math.random() < 0.3) {
+            const angle = Math.random() * Math.PI * 2;
+            splinters.push(new Splinter(mouse.x, mouse.y, angle));
+          }
+        });
+    
+        function draw() {
+          ctx.clearRect(0, 0, width, height);
+    
+          for (let i = 0; i < points.length; i++) {
+            for (let j = i + 1; j < points.length; j++) {
+              let dx = points[i].x - points[j].x;
+              let dy = points[i].y - points[j].y;
+              let dist = Math.sqrt(dx * dx + dy * dy);
+    
+              if (dist < 100) {
+                ctx.strokeStyle = `rgba(240,255,253,${(1 - dist / 100) * 0.5})`;
+                ctx.beginPath();
+                ctx.moveTo(points[i].x, points[i].y);
+                ctx.lineTo(points[j].x, points[j].y);
+                ctx.stroke();
+              }
+            }
+          }
+    
+          for (let i = splinters.length - 1; i >= 0; i--) {
+            splinters[i].update();
+            splinters[i].draw(ctx);
+            if (splinters[i].isDead()) {
+              splinters.splice(i, 1);
+            }
+          }
+    
+          for (let i = points.length - 1; i >= 0; i--) {
+            points[i].alpha -= 0.02;
+            if (points[i].alpha <= 0) {
+              points.splice(i, 1);
+            }
+          }
+    
+          requestAnimationFrame(draw);
+        }
+    
+        window.addEventListener("resize", () => {
+          width = window.innerWidth;
+          height = window.innerHeight;
+          canvas.width = width;
+          canvas.height = height;
+        });
+    
+        draw();
+      </script>
 
 </body>
 </html>
