@@ -1,6 +1,8 @@
 # eeg_webshooter
 
 # Project Overview:
+![image](https://github.com/user-attachments/assets/eb3bc7a3-c32d-4d51-acd3-e73279b86535)
+
 The Spiderman EEG-Controlled Web Shooter project aims to create a functional prototype of Spiderman's iconic web shooters, controlled by EEG (electroencephalogram) signals. This project integrates mechanical design, signal processing, and neural control to allow users to operate the web shooters using brain waves. Commands will include launching the web, adjusting the length of the web, and reloading the shooter.
 
 # Key Components
