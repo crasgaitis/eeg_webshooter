@@ -17,19 +17,42 @@
         <form method="POST">
             <button type="submit" name="button1">Get min</button>
             <button type="submit" name="button2">Get max</button>
-            <button type='submit' name="button3">Spiderman recording</button>
+            <button onclick="spiderman_go()">Start Recording</button>
         </form>
 
-        <p>{{alpha}}</p>
+        <!-- <p>{{alpha}}</p>
         <p>{{beta}}</p>
         <p>{{theta}}</p>
-        <p>{{delta}}</p>
+        <p>{{delta}}</p> -->
+
+        <h1>Focus Score: <span id="score">0</span></h1>
+
     </div>
     
     <footer>
         <p>Made with 🩵 by Catherine, Kush, Keishin, & Jenny </p>
     </footer>
 
+
+    <script>
+      function spiderman_go() {
+          fetch('/start', { method: 'POST' })
+              .then(response => response.json())
+              .then(data => {
+                  console.log(data.status);
+              });
+      }
+
+      function fetchScore() {
+          fetch('/score')
+              .then(response => response.json())
+              .then(data => {
+                  document.getElementById('score').innerText = data.score.toFixed(5);
+              });
+      }
+
+      setInterval(fetchScore, 1000);  // every second
+   </script>
 
     <script>
         const canvas = document.getElementById("webCanvas");

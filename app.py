@@ -2,13 +2,19 @@ import pandas as pd
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+import threading
 
 # Import functions from the utils module
 from utils import update_buffer, get_last_data, compute_band_powers
 from pylsl import StreamInlet, resolve_byprop
 
 app = Flask(__name__)
+
+score = 0.0
+score_lock = threading.Lock()
+recording_thread = None
+recording_started = False
 
 start_time = None      # for continuous timing
 total_focus_time = 0   # for cumulative timing
@@ -36,12 +42,20 @@ def do_max_rec():
     record(60 * 5, 'max_bandpowers.csv')
     return "You clicked the second button."
 
+@app.route('/start', methods=['POST'])
 def spiderman_go():
     """
     Trigger live recordings with terminal printouts.
     """
     print("Running spiderman detection.")
-    record_live()
+    global recording_thread, recording_started
+    if not recording_started:
+        recording_started = True
+        recording_thread = threading.Thread(target=record_live, daemon=True)
+        recording_thread.start()
+        return jsonify({'status': 'recording started'})
+    else:
+        return jsonify({'status': 'already running'})
     
 def compute_focus_score(rule_matrix):
     """
@@ -96,8 +110,12 @@ def check_focus_continuous(rule_matrix, continuous, time_data):
 
     Returns:
         float: Final focus score between 0 and 1.
-    """
+    """       
     global focus_start_time, focus_total_time, last_check_time
+
+    focus_start_time = None
+    focus_total_time = 0
+    last_check_time = time.time()
 
     curr_time = time.time()
     delta_time = curr_time - last_check_time
@@ -157,7 +175,13 @@ def check_focus_discrete(focus_rule):
     if time_focus >= time_min:
         print(f'wowowo {time_focus}')
         
+@app.route('/score')
+def get_score():
+    global score
+    return jsonify({'score': float(score) })
+        
 def record_live():
+    global score 
     # Search for active LSL streams
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
@@ -209,10 +233,16 @@ def record_live():
         max_bands = pd.read_csv('iq_max_bandpowers.csv')
         min_bands = pd.read_csv('min_bandpowers.csv')
         
-        condition = beta > max_bands['beta'].quantile(0.75)
+        max_val = max_bands['beta'].quantile(0.95)
+        min_val = min_bands['beta'].quantile(0.05)
         
         # check_focus((condition, True, 5))  # for continuous
-        check_focus_discrete((condition, False, 5))  # for cumulative
+        # check_focus_discrete((condition, False, 5))  # for cumulative
+        with score_lock:
+            score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
+            print(score)
+        # score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
+
             
 def record(duration_seconds=10, output_file='eeg_bandpowers.csv'):
     # Search for active LSL streams
