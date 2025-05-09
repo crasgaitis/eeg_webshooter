@@ -9,7 +9,16 @@ import threading
 from utils import update_buffer, get_last_data, compute_band_powers
 from pylsl import StreamInlet, resolve_byprop
 
+import serial
+
 app = Flask(__name__)
+
+ESC_ON = False
+
+if ESC_ON:
+    baud = 9600
+    port = "COM3"
+    esc_control = serial.Serial(port, baud)
 
 score = 0.0
 score_lock = threading.Lock()
@@ -241,7 +250,14 @@ def record_live():
         with score_lock:
             score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
             print(score)
-        # score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
+            
+            if ESC_ON:
+                cmd = f"{score}\n"
+                esc_control.write(cmd.encode())
+                esc_control.flush()
+                print("Sent: " + cmd)
+
+            # score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
 
             
 def record(duration_seconds=10, output_file='eeg_bandpowers.csv'):
