@@ -11,6 +11,9 @@ from pylsl import StreamInlet, resolve_byprop
 
 import serial
 
+ESC_ON=True
+esc_control=None
+
 def init_serial():
     global esc_control
     try:
@@ -21,9 +24,6 @@ def init_serial():
         esc_control = None
 
 app = Flask(__name__)
-
-ESC_ON = True
-esc_control=None
 
 score = 0.0
 score_lock = threading.Lock()
@@ -193,11 +193,12 @@ def check_focus_discrete(focus_rule):
 def get_score():
     global score
     return jsonify({'score': float(score) })
-        
+
 def record_live():
-    global score 
+    global score
     if ESC_ON and esc_control is None:
         init_serial()
+
     # Search for active LSL streams
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
@@ -257,6 +258,9 @@ def record_live():
         with score_lock:
             score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 2, 0.2]) * 10
             print(score)
+            
+            # if esc_control is None:
+            #     init_serial()
             
             if ESC_ON:
                 cmd = f"{score}\n"
