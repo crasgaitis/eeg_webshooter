@@ -1,5 +1,16 @@
 # eeg_webshooter
 
+# Instructions:
+
+0. Plug in Arduino.
+1. Open device manager to check which com port is in use. (i.e. COM3)
+2. Open the Arduino IDE to (1) compile and (2) upload the code in arduino.cpp file. Make sure you're using the right port. Make sure the serial monitor is closed.
+3. Turn on the Muse EEG. Open Petal Metrics and click stream. Wait until it says "streaming."
+4. Go to the app.py file and set the ESC_ON flag to `True`.
+5. Activate the webshooter environment with `conda activate eeg_webshooter`.
+6. Run the application with `python app.py`.
+7. Go to `https://127.0.0.1.:5000` in your preferred browser.
+
 # Project Overview:
 ![image](https://github.com/user-attachments/assets/eb3bc7a3-c32d-4d51-acd3-e73279b86535)
 

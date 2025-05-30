@@ -240,15 +240,15 @@ def record_live():
         delta, theta, alpha, beta = band_powers
         
         max_bands = pd.read_csv('iq_max_bandpowers.csv')
-        min_bands = pd.read_csv('min_bandpowers.csv')
+        min_bands = pd.read_csv('iq_min_bandpowers.csv')
         
-        max_val = max_bands['beta'].quantile(0.95)
-        min_val = min_bands['beta'].quantile(0.05)
+        max_val = max_bands['beta'].quantile(0.2)
+        min_val = min_bands['beta'].quantile(0.10)
         
         # check_focus((condition, True, 5))  # for continuous
         # check_focus_discrete((condition, False, 5))  # for cumulative
         with score_lock:
-            score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
+            score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 2, 0.2]) * 10
             print(score)
             
             if ESC_ON:
