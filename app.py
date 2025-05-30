@@ -11,14 +11,19 @@ from pylsl import StreamInlet, resolve_byprop
 
 import serial
 
+def init_serial():
+    global esc_control
+    try:
+        esc_control = serial.Serial("COM3", 9600)
+        print("Serial port opened successfully.")
+    except serial.SerialException as e:
+        print(f"Failed to open serial port: {e}")
+        esc_control = None
+
 app = Flask(__name__)
 
 ESC_ON = True
-
-if ESC_ON:
-    baud = 9600
-    port = "COM3"
-    esc_control = serial.Serial(port, baud)
+esc_control=None
 
 score = 0.0
 score_lock = threading.Lock()
@@ -191,6 +196,8 @@ def get_score():
         
 def record_live():
     global score 
+    if ESC_ON and esc_control is None:
+        init_serial()
     # Search for active LSL streams
     print('Looking for an EEG stream...')
     streams = resolve_byprop('type', 'EEG', timeout=2)
