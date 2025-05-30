@@ -13,7 +13,7 @@ import serial
 
 app = Flask(__name__)
 
-ESC_ON = False
+ESC_ON = True
 
 if ESC_ON:
     baud = 9600
@@ -343,4 +343,4 @@ def home():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
