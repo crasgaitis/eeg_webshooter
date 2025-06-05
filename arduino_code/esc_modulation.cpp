@@ -11,7 +11,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  String cmd = Serial.readStringUntil('\n')
+  String cmd = Serial.readStringUntil('\n');
   float potValue = cmd.toFloat();
 
   // Clamp potValue between 0 and 1

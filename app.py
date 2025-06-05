@@ -38,7 +38,7 @@ BUFFER_LENGTH = 5
 EPOCH_LENGTH = 1
 OVERLAP_LENGTH = 0
 SHIFT_LENGTH = EPOCH_LENGTH - OVERLAP_LENGTH
-INDEX_CHANNEL = [1]
+INDEX_CHANNEL = [2]
 
 def do_min_rec():
     """
@@ -160,7 +160,7 @@ def check_focus_continuous(rule_matrix, continuous, time_data):
         time_score = 1.0 if time_focused >= time_min else 0.0
 
     total = rule_weight * rule_score + time_weight * time_score
-    print(total)
+    print(f"total: {total}")
     return total
     
 def check_focus_discrete(focus_rule):
@@ -197,6 +197,7 @@ def get_score():
 def record_live():
     global score
     if ESC_ON and esc_control is None:
+        # print('test')
         init_serial()
 
     # Search for active LSL streams
@@ -250,14 +251,14 @@ def record_live():
         max_bands = pd.read_csv('iq_max_bandpowers.csv')
         min_bands = pd.read_csv('iq_min_bandpowers.csv')
         
-        max_val = max_bands['beta'].quantile(0.2)
-        min_val = min_bands['beta'].quantile(0.10)
+        max_val = max_bands['beta'].quantile(0.13)
+        min_val = min_bands['beta'].quantile(0.08)
         
         # check_focus((condition, True, 5))  # for continuous
         # check_focus_discrete((condition, False, 5))  # for cumulative
         with score_lock:
             score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 2, 0.2]) * 10
-            print(score)
+            # print(score)
             
             # if esc_control is None:
             #     init_serial()
