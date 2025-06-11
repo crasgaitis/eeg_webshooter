@@ -45,13 +45,14 @@
 
       function fetchScore() {
           fetch('/score')
-              .then(response => response.json())
-              .then(data => {
-                  document.getElementById('score').innerText = data.score.toFixed(5);
+             .then(response => response.json())
+             .then(data => {
+                  document.getElementById('score').innerText = data.score
               });
       }
 
-      setInterval(fetchScore, 1000);  // every second
+
+      setInterval(fetchScore, 500);  // every second
    </script>
 
     <script>

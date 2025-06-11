@@ -162,24 +162,7 @@ def check_focus_continuous(rule_matrix, continuous, time_data):
     total = rule_weight * rule_score + time_weight * time_score
     print(f"total: {total}")
     return total
-
-# Globals
-
-def compute_discrete_beta_score(beta, min_val, max_val):
-    """
-    Discretize beta into 0, 0.5, or 1 based on thresholds.
-    """
-    lower_third = min_val + (max_val - min_val) / 3
-    upper_third = min_val + 2 * (max_val - min_val) / 3
-
-    if beta <= lower_third:
-        return 0.0
-    elif beta <= upper_third:
-        return 0.5
-    else:
-        return 1.0
-
-
+    
 def check_focus_discrete(focus_rule):
     global start_time, total_focus_time, last_time
     
@@ -209,26 +192,10 @@ def check_focus_discrete(focus_rule):
 @app.route('/score')
 def get_score():
     global score
-    print(score)
-    if score == 0:
-        score_a = "low"
-    elif score < 1:
-        score_a = "mid"
-    else:
-        score_a = "high"
-    
-    return jsonify({'score': score_a })
+    return jsonify({'score': float(score) })
 
 def record_live():
     global score
-    global current_score
-    global score_hold_start
-    global cooldown_until
-    
-    current_score = 0
-    score_hold_start = None
-    cooldown_until = 0
-
     if ESC_ON and esc_control is None:
         # print('test')
         init_serial()
@@ -284,50 +251,29 @@ def record_live():
         max_bands = pd.read_csv('iq_max_bandpowers.csv')
         min_bands = pd.read_csv('iq_min_bandpowers.csv')
         
-        max_val = max_bands['beta'].quantile(0.30)
+        max_val = max_bands['beta'].quantile(0.13)
         min_val = min_bands['beta'].quantile(0.08)
         
         # check_focus((condition, True, 5))  # for continuous
         # check_focus_discrete((condition, False, 5))  # for cumulative
         with score_lock:
-            beta_score = compute_discrete_beta_score(beta, min_val, max_val)
-            print(beta)
-            print(beta_score)
-            curr_time = time.time()
-
-            # Cooldown logic
-            if curr_time < cooldown_until:
-                score = 0.0  # Force score to 0
-            elif beta_score == 1.0:
-                if score_hold_start is None:
-                    score_hold_start = curr_time
-                elif curr_time - score_hold_start >= 5:
-                    cooldown_until = curr_time + 1
-                    score_hold_start = None
-                    score = 0.0
-                else:
-                    score = 1.0
-            else:
-                score_hold_start = None  # Reset hold timer
-                score = beta_score
-
-            print(f"Score: {score}")
-
+            score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 2, 0.2]) * 10
+            # print(score)
+            
+            if score < 0.2:
+                score = 0.0
+            
+            # if esc_control is None:
+            #     init_serial()
+            
             if ESC_ON:
-                cmd = f"{score}\n"  # * 10
-                
-                if score < 0.6:
-                    score = 0
-                
-                elif score < 0.9:
-                    score = 0.4
-                    
-                else:
-                    score = 1
-                
+                cmd = f"{score}\n"
                 esc_control.write(cmd.encode())
                 esc_control.flush()
                 print("Sent: " + cmd)
+
+            # score = check_focus_continuous( [[beta, 0, max_val, min_val]], False, [2, 3, 0.5])
+
             
 def record(duration_seconds=10, output_file='eeg_bandpowers.csv'):
     # Search for active LSL streams
