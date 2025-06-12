@@ -1,6 +1,6 @@
-# eeg_webshooter
+# The Amazing Webshooter
 
-# Instructions:
+## Instructions:
 
 0. Plug in Arduino.
 1. Open device manager to check which com port is in use. (i.e. COM3)
@@ -12,9 +12,19 @@
 7. Go to `https://127.0.0.1.:5000` in your preferred browser.
 
 # Project Overview:
-![image](https://github.com/user-attachments/assets/eb3bc7a3-c32d-4d51-acd3-e73279b86535)
+<table>
+  <tr>
+    <td style = "width: 50%">
+      <img src="https://github.com/user-attachments/assets/eb3bc7a3-c32d-4d51-acd3-e73279b86535" alt="image" />
+    </td>
+    <td style="vertical-align: top; padding-left: 20px;">
+      <p>
+        The Spiderman EEG-Controlled Web Shooter project aims to create a functional prototype of Spiderman's iconic web shooters, controlled by EEG (electroencephalogram) signals. This project integrates mechanical design, signal processing, and neural control to allow users to operate the web shooters using brain waves. Commands will include launching the web, adjusting the length of the web, and reloading the shooter.
+      </p>
+    </td>
+  </tr>
+</table>
 
-The Spiderman EEG-Controlled Web Shooter project aims to create a functional prototype of Spiderman's iconic web shooters, controlled by EEG (electroencephalogram) signals. This project integrates mechanical design, signal processing, and neural control to allow users to operate the web shooters using brain waves. Commands will include launching the web, adjusting the length of the web, and reloading the shooter.
 
 ## Key Components
 
